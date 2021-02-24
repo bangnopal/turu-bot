@@ -1,0 +1,5 @@
+{
+    "minimumMember": 20,
+    "groupLimit": 25,
+    "maxMsgCache": 500
+}

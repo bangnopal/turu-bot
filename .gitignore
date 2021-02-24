@@ -1,0 +1,6 @@
+node_modules
+*.data.json
+logs
+.node-persist
+package-lock.json
+.vscode
