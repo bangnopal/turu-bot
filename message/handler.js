@@ -27,6 +27,7 @@ const banned = JSON.parse(fs.readFileSync('./database/banned.json'))
 const premium = JSON.parse(fs.readFileSync('./database/premium.json'))
 const config = JSON.parse(fs.readFileSync('./auth/config.json'))
 const setting = JSON.parse(fs.readFileSync('./auth/setting.json'))
+const userData = JSON.parse(fs.readFileSync('./database/user.json'))
 const commandsDB = JSON.parse(fs.readFileSync('./database/commands.json'))
 
 /** END */
@@ -74,7 +75,7 @@ module.exports = msgHandler = async (turu = new Client(), message) => {
             }
         }
         
-        if (!isRegistered(sender.id)) return turu.reply(from, 'youre not registered', id)
+        console.log(isRegistered(sender.id, userData))
         
         const isQuotedImage = quotedMsg && quotedMsg.type === 'image'
         const isQuotedVideo = quotedMsg && quotedMsg.type === 'video'
@@ -108,9 +109,8 @@ module.exports = msgHandler = async (turu = new Client(), message) => {
                 if (!args.includes('|')) return turu.reply(from, `✅ Contoh: ${usePrefix}${singleArg} bot | hai kak`, id)
                 value = arg.split(' | ')
                 if (checkCommands(value[0], commandsDB) === true) return turu.reply(from, `❌ Gagal gan, command yang kamu masukan telah terdaftar dalam database. Silahkan delete command dengan cara ketik: ${usePrefix}pdel ${value[0]}`, id)
-                addCommands(value[0], value[1], sender.id, commandsDB).then(() => {
-                    turu.reply(from, 'Sukses gan, command berhasil ditambahkan', id)
-                })
+                addCommands(value[0], value[1], sender.id, commandsDB)
+                turu.reply(from, 'Sukses gan, custom autoresponder telah ditambahkan ke database 🚀', id)
                 break
             case 'tahta':
             case 'harta':
