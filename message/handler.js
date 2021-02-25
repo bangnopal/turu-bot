@@ -16,6 +16,7 @@ const { msgFilter } = require('../utils/msgFilter')
 const { joox } = require('../lib/downloader')
 const msg = JSON.parse(fs.readFileSync('./message/quickReply.json'))
 const { addCommands, checkCommands } = require('../tools/commands')
+const { isRegistered, addUser, isLimit, addLimit } = require('../lib/database')
 
 /** END */
 
@@ -72,6 +73,8 @@ module.exports = msgHandler = async (turu = new Client(), message) => {
                 turu.reply(from, commandsDB[i].balasan, id)
             }
         }
+        
+        if (!isRegistered(sender.id)) return turu.reply(from, 'youre not registered', id)
         
         const isQuotedImage = quotedMsg && quotedMsg.type === 'image'
         const isQuotedVideo = quotedMsg && quotedMsg.type === 'video'
