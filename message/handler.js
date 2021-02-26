@@ -16,6 +16,7 @@ const { msgFilter } = require('../utils/msgFilter')
 const { joox } = require('../lib/downloader')
 const msg = JSON.parse(fs.readFileSync('./message/quickReply.json'))
 const { addCommands, checkCommands } = require('../tools/commands')
+const { formatwa } = require('../utils/formatten')
 const { isRegistered, addUser, isLimit, addLimit } = require('../lib/database')
 
 /** END */
@@ -23,6 +24,7 @@ const { isRegistered, addUser, isLimit, addLimit } = require('../lib/database')
 
 /** DATABASE */
 
+const limit = JSON.parse(fs.readFileSync('./database/limit.json'))
 const banned = JSON.parse(fs.readFileSync('./database/banned.json'))
 const premium = JSON.parse(fs.readFileSync('./database/premium.json'))
 const config = JSON.parse(fs.readFileSync('./auth/config.json'))
@@ -52,7 +54,7 @@ module.exports = msgHandler = async (turu = new Client(), message) => {
         body = (type === 'chat') ? body : ((type === 'image' || type === 'video') && caption) ? caption : ''
         const command = body.slice(1).trim().split(/ +/).shift().toLowerCase()
         const args = body.slice(1).trim().split(/ +/).slice(1)
-        const singleArg = body.slice(1).trim().split('')[0]
+        const singleArg = body.slice(1).split('')[0]
         const arg = body.substring(body.indexOf(' ') + 1)
         const q = args.join(' ')
         const usePrefix = body.substring(1,0)
@@ -65,17 +67,14 @@ module.exports = msgHandler = async (turu = new Client(), message) => {
         const isGroupAdmins = groupAdmins.includes(sender.id) || false
         const isBotGroupAdmins = groupAdmins.includes(botNumber) || false
         
-        for (var i = 0; i < premium.length; i++) {
-            const isPremium = premium[i].nomor.includes(sender.id)
-        }
-        
+        const { thisPremium, addPremium } = require('../lib/database')
+        const isPremium = thisPremium(sender.id, premium)
+
         for (var i = 0; i < commandsDB.length ; i++) {
             if (body.toLowerCase() === commandsDB[i].pesan) {
                 turu.reply(from, commandsDB[i].balasan, id)
             }
         }
-        
-        console.log(isRegistered(sender.id, userData))
         
         const isQuotedImage = quotedMsg && quotedMsg.type === 'image'
         const isQuotedVideo = quotedMsg && quotedMsg.type === 'video'
@@ -83,7 +82,6 @@ module.exports = msgHandler = async (turu = new Client(), message) => {
         const isQuotedGif = quotedMsg && quotedMsg.mimetype === 'image/gif'
         const isImage = type === 'image'
         const isVideo = type === 'video'
-        
         /** END */
         
         if (isBanned) return console.log(color('[BANNED]', 'red'), color('user terbanned berusaha menggunakan Bot', 'yellow'))
@@ -99,29 +97,54 @@ module.exports = msgHandler = async (turu = new Client(), message) => {
         if (!isGroupMsg) console.log(color('[MESSAGE]', 'green'), `${color(`${body} [${args.length}]`, 'gold')}`, 'from', color(pushname, 'yellow'))
         /** END */
         
-        
+        if (!isRegistered(sender.id, userData)) addUser(sender.id, pushname, userData)
+
         /** SWITCH - CASE MESSAGE HANDLER */
         switch (command) {
+            case 'addpremium':
+                if (!isOwner) return
+                if (args.length < 2) return
+                value = arg.split(' | ')
+                addPremium(formatwa(value[0]), value[1], premium)
+                turu.reply(from, 'Sukses gan, user telah ditambahkan sebagai Member Premium 🚀', id)
+                break
+            case 'exec':
+                if (!isOwner) return
+                if (body.slice(6).length < 1) return
+                try {
+                    let evaled = await eval(body.slice(6))
+                    if (typeof evaled !== 'string') evaled = required('util').inspect(evaled)
+                    turu.reply(from, evaled, id)
+                } catch (e) {
+                    return turu.reply(from, e, id)
+                }
+                break
             case 'addcommands':
             case 'addcommand':
             case 'padd':
+                if (isLimit(sender.id, limit, isPremium, isOwner)) return turu.reply(from, msg.limitReached, id)
                 if (args.length < 3) return turu.reply(from, `✅ Contoh: ${usePrefix}${singleArg} bot | hai kak`, id)
                 if (!args.includes('|')) return turu.reply(from, `✅ Contoh: ${usePrefix}${singleArg} bot | hai kak`, id)
                 value = arg.split(' | ')
+                addLimit(sender.id, limit)
                 if (checkCommands(value[0], commandsDB) === true) return turu.reply(from, `❌ Gagal gan, command yang kamu masukan telah terdaftar dalam database. Silahkan delete command dengan cara ketik: ${usePrefix}pdel ${value[0]}`, id)
                 addCommands(value[0], value[1], sender.id, commandsDB)
                 turu.reply(from, 'Sukses gan, custom autoresponder telah ditambahkan ke database 🚀', id)
                 break
             case 'tahta':
             case 'harta':
+                if (isLimit(sender.id, limit, isPremium, isOwner)) return turu.reply(from, msg.limitReached, id)
                 if (!isPremium) return turu.reply(from, msg.onlyPremium, id)
-                if (args.length < 1) return turu.reply(from, `✅ Contoh: ${usePrefix}${body} wanita`)
+                if (args.length < 1) return turu.reply(from, `✅ Contoh: ${usePrefix}${singleArg} wanita`, id)
                 await turu.reply(from, msg.proses, id)
+                addLimit(sender.id, limit)
                 turu.sendFileFromUrl(from, `${turu_link}/textmaker/harta_tahta?apikey=${turukey}&text=${encodeURIComponent(body.slice(7))}`, 'hartatahta.jpg', msg.picFinish, id)
                 break
             case 'stickergif':
             case 'stikergif':
             case 'sgif':
+                if (isLimit(sender.id, limit, isPremium, isOwner)) return turu.reply(from, msg.limitReached, id)
+                addLimit(sender.id, limit)
                 if (isMedia && type === 'video' || mimetype === 'image/gif' || isQuotedVideo || isQuotedGif) {
                     try {
                         const encryptMedia = isQuotedVideo ? quotedMsg : message || isQuotedGif
@@ -147,6 +170,8 @@ module.exports = msgHandler = async (turu = new Client(), message) => {
             case 's':
             case 'sticker':
             case 'setiker':
+                if (isLimit(sender.id, limit, isPremium, isOwner)) return turu.reply(from, msg.limitReached, id)
+                addLimit(sender.id, limit)
                 try {
                     if (isMedia && type === 'image') {
                         const mediaData = await decryptMedia(message, uaOverride)
@@ -166,6 +191,8 @@ module.exports = msgHandler = async (turu = new Client(), message) => {
             case 'toimage':
             case 'stickertoimg':
             case 'decrypt':
+                if (isLimit(sender.id, limit, isPremium, isOwner)) return turu.reply(from, msg.limitReached, id)
+                addLimit(sender.id, limit)
                 if (isQuotedSticker) {
                     try {
                         const mediaData = await decryptMedia(quotedMsg, uaOverride)
@@ -180,12 +207,12 @@ module.exports = msgHandler = async (turu = new Client(), message) => {
             case 'joox':
                 if (args.length < 1) return turu.reply(from, `✅ Contoh: ${usePrefix}joox dear god`, id)
                 await turu.reply(from, msg.proses, id)
+                addLimit(sender.id, limit)
                 joox(body.slice(6))
                     .then(result => {
                         turu.sendFileFromUrl(from, result.result.thumbnail, 'thumbnail.jpg', `*Judul*: ${result.result.title}\n*Penyanyi*: ${result.result.singer}\n*Album*: ${result.result.album}\n*Tgl rilis*: ${result.result.realease_date}\n*Durasi*: ${result.result.duration}\n*Size*: ${result.result.size}\n*Lirik*: \n${result.result.lyric.replace('', 'Tidak ada lirik')}\n\n\n_Mohon menunggu proses pengiriman audio 🚀_`, id)
                         turu.sendFileFromUrl(from, result.result.mp3, '', '', id)
                     }).catch(err => {
-                        console.log(err)
                         return turu.reply(from, msg.musicNotFound, id)
                     })
                 break
