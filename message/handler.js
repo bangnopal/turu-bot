@@ -2,6 +2,7 @@
 
 const { decryptMedia, Client } = require('@open-wa/wa-automate')
 const fs = require('fs')
+const axios = require('axios')
 const moment = require('moment-timezone')
 moment.tz.setDefault('Asia/Jakarta').locale('id')
 
@@ -54,8 +55,8 @@ module.exports = msgHandler = async (turu = new Client(), message) => {
         body = (type === 'chat') ? body : ((type === 'image' || type === 'video') && caption) ? caption : ''
         const command = body.slice(1).trim().split(/ +/).shift().toLowerCase()
         const args = body.slice(1).trim().split(/ +/).slice(1)
-        const singleArg = body.slice(1).split('')[0]
         const arg = body.substring(body.indexOf(' ') + 1)
+        const singleArg = body.slice(1).trim().split(' ')[0]
         const q = args.join(' ')
         const usePrefix = body.substring(1,0)
         
@@ -166,8 +167,16 @@ module.exports = msgHandler = async (turu = new Client(), message) => {
                     await turu.reply(from, `Gambarnya mana?? bjirr 🚀`, id)
                 }
                 break
+            case 'simi':
+                if (!isPremium) return turu.reply(from, msg.onlyPremium, id)
+                if (args.length < 1) return turu.reply(from, `✅ Contoh: ${usePrefix}${singleArg} apa kabar simi?`, id)
+                axios.get(`${turu_link}/tools/simsimi?apikey=${turukey}&pesan=${body.slice(6)}`).then(result => {
+                    turu.reply(from, result.data.result.response, id)
+                }).catch(e => {
+                    return turu.reply(from, 'Maaf kak, simi ga paham yang kamu maksud 🤔', id)
+                })
+                break
             case 'stiker':
-            case 's':
             case 'sticker':
             case 'setiker':
                 if (isLimit(sender.id, limit, isPremium, isOwner)) return turu.reply(from, msg.limitReached, id)
@@ -180,7 +189,7 @@ module.exports = msgHandler = async (turu = new Client(), message) => {
                         const mediaData = await decryptMedia(quotedMsg, uaOverride)
                         turu.sendImageAsSticker(from, `data:${quotedMsg.mimetype};base64,${mediaData.toString('base64')}`, {author: 'Turu Bot', pack: 'Sticker', keepScale: 'true'})
                     } else {
-                        await turu.reply(from, `Tidak ada gambarnya sob, silahkan kirim/reply gambar dengan caption ${usePrefix}${body}`, id)
+                        await turu.reply(from, `Tidak ada gambarnya sob, silahkan kirim/reply gambar dengan caption ${usePrefix}${singleArg}`, id)
                     }
                 } catch (e) {
                     return turu.reply(from, msg.imageTooBig, id)
@@ -201,11 +210,11 @@ module.exports = msgHandler = async (turu = new Client(), message) => {
                         return turu.reply(from, msg.stickerTooBig, id)
                     }
                 } else {
-                    await turu.reply(from, `❌ Tidak ada sticker. Silahkan reply sticker dengan caption ${usePrefix}${body}`, id)
+                    await turu.reply(from, `❌ Tidak ada sticker. Silahkan reply sticker dengan caption ${usePrefix}${singleArg}`, id)
                 }
                 break
             case 'joox':
-                if (args.length < 1) return turu.reply(from, `✅ Contoh: ${usePrefix}joox dear god`, id)
+                if (args.length < 1) return turu.reply(from, `✅ Contoh: ${usePrefix}${singleArg} dear god`, id)
                 await turu.reply(from, msg.proses, id)
                 addLimit(sender.id, limit)
                 joox(body.slice(6))
