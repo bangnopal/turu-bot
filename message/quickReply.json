@@ -2,9 +2,13 @@
     "proses": "_Permintaan anda sedang diproses, ditunggu aja gan 🚀_",
     "musicNotFound": "❌ Gagal gan, musik yang anda minta tidak ditemukan",
     "picFinish": "Nih gan, gambar yang anda minta sudah jadi 🚀",
+    "videoFinish": "Nih gan, video yang anda minta sudah jadi 🚀",
     "imageTooBig": "❌ Gagal gan, ukuran gambar terlalu besar untuk diproses",
     "videoTooBig": "❌ Gagal gan, ukuran video/GIF terlalu besar untuk diproses",
     "stickerTooBig": "❌ Gagal gan, ukuran sticker terlalu besar untuk diproses",
     "onlyPremium": "Maaf gan, fitur ini hanya dapat digunakan oleh Member Premium 🚀",
-    "limitReached": "❌ Permintaan dibatalkan gan, batas penggunaan Turu Bot anda untuk hari ini telah mencapa batas.\nSilahkan coba lagi besok 🚀"
+    "footer": "Powered by Turu API 😎 | *turuapi.org*",
+    "invalidLink": "❌ Error gan, sepertinya link yang kamu kirim tidak valid",
+    "limitReached": "❌ Permintaan dibatalkan gan, batas penggunaan Turu Bot anda untuk hari ini telah mencapa batas.\nSilahkan coba lagi besok 🚀",
+    "noData": "❌ Tidak ada data untuk ditampilkan"
 }
