@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Turu Bot is simple Whatsapp Bot, build in NodeJS and Powered by Turu API 😎 (https://turuapi.org)
+Turu Bot is simple Whatsapp Bot, build in NodeJS and Powered by [Turu API 😎](https://turuapi.org)
 
 ## Website
 - [TURUAPI.ORG](https://turuapi.org)
