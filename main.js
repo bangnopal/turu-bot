@@ -55,6 +55,7 @@ const start = (turu =  new Client()) => {
                 if (cache >= setting.maxMsgCache) {
                     console.log(color('[CLEANING]', 'green'), color('Cache message mencapai batas, beberapa pesan akan dihapus oleh sistem', 'yellow'))
                     turu.cutMsgCache()
+                    turu.cutMsgCache()
                     console.log(color('[CLEAR]', 'cyan'), color('Message cache telah dihapus', 'yellow'))
                 }
             })
